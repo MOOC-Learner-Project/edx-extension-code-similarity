@@ -1,0 +1,10 @@
+FROM python:3.7
+
+RUN pip3 install scipy sklearn pandas
+
+COPY data/ /data
+COPY scripts/extract_csv_data.py .
+COPY scripts/store_counts.py .
+COPY scripts/common.py .
+
+RUN ["python3", "store_counts.py"]

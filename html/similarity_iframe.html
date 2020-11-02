@@ -1,0 +1,132 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <style>
+      textarea {
+	  width: 550px;
+	  height: 200px;
+	  overflow-y: scroll;
+	  resize: none;
+      }
+      
+      #code_input {
+	  display: inline-block;
+	  position: absolute;
+      }
+
+      #robot {
+	  margin-left: 580px;
+      }
+
+      #speech-bubble {
+      	  background-color: #f8f8f8;
+      	  border: 1px solid #c8c8c8;
+      	  border-radius: 5px;
+      	  text-align: center;
+      	  padding: 10px;
+      	  position: absolute;
+      	  max-width: 200px;
+      	  margin-left: 2px;
+      }
+
+      .arrow {
+      	  border-style: solid;
+      	  position: absolute;
+      	  transform: rotate(90deg) scale(1, 5);
+      }
+      
+      .bottom {
+      	  border-color: #c8c8c8 transparent transparent transparent;
+      	  border-width: 8px 8px 0px 8px;
+      	  left: -28px;
+
+      }
+
+      .bottom:after {
+      	  border-color: #f8f8f8 transparent transparent transparent;
+      	  border-style: solid;
+      	  border-width: 7px 7px 0px 7px;
+      	  bottom: 1px;
+      	  content: "";
+      	  position: absolute;
+      	  left: -7px;
+      }
+
+      #speech-bubble, #robot {
+	  display: none;
+      }
+    </style>
+  </head>
+
+  <body>
+    <p>Input your code here:</p>
+
+    <div id="code_input">
+      <textarea name="code" required></textarea>
+      <br>
+      <input type="button" value="Submit">
+    </div>
+
+    <img id="robot" src="robot.png" alt="Smiley Face">
+    
+    <div id="speech-bubble">
+      <div class="arrow bottom"></div>
+      <div id="result"></div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script>
+      $(document).ready(function() {
+	  var params = new URLSearchParams(window.location.search);
+
+	  if (params.has('subjective')) {
+	      window.subjective = 1;
+	  } else {
+	      window.subjective = 0;
+	  }
+
+	  if (!params.has('pb')) {
+	      alert("You must provide a problem to check!");
+	      throw new Error("You must provide a problem to check!");
+	  } else {
+	      window.pb = params.get('pb');
+	  }
+      });
+      
+      $('input').click(function () {
+	  var code = $('textarea').serializeArray()[0]['value'];
+
+	  if (window.pb) {
+	      $.ajax({
+		  type: "GET",
+		  url: "/cgi-bin/results.py",
+		  data: {submission: code, subjective: window.subjective, pb: window.pb},
+		  
+		  success: async function (output) {
+		      $("#result").text(output);
+		      
+		      var robot = $("#robot");
+		      
+		      robot.css('display', 'inline-block');
+		      
+		      var bubble = $("#speech-bubble");
+		      var arrow = $(".arrow");
+		      
+		      bubble.css('display', 'inline-block');
+		      
+		      var padding = (bubble.outerWidth()-bubble.width()) / 2;
+		      
+		      var arrow_bottom = bubble.height() / 2 + padding / 2;
+		      arrow.css('bottom', arrow_bottom);
+		      
+		      var mouth_offset = robot.offset().top + 83;
+		      var arrow_offset = arrow.offset().top;
+		      
+		      bubble.css('margin-top', parseInt(bubble.css('margin-top')) + mouth_offset - arrow_offset);	      
+		  }
+	      });
+	  }
+      });
+    </script>
+  </body>
+</html>
